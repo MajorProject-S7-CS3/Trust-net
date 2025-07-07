@@ -1,0 +1,5 @@
+flask
+face_recognition
+numpy
+pillow
+dlib==19.24.0
