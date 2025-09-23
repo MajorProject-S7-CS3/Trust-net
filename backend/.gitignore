@@ -64,6 +64,10 @@ ai-microservices/OCR-Service/venv/
 # Trustnet-face virtual environment (if any)
 trustnet-face/venv/
 trustnet-face/__pycache__/
+**/venv/
+**/*-venv/
+**/env/
+**/*-env/
 
 # ======================
 # Miscellaneous
