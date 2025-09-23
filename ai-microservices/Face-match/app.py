@@ -1,34 +1,63 @@
 from flask import Flask, request, jsonify
-import face_recognition
-import numpy as np
-from PIL import Image
-import io
+from deepface import DeepFace
+import os
+from werkzeug.utils import secure_filename
 
 app = Flask(__name__)
+UPLOAD_FOLDER = 'uploads'
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
-@app.route('/verify-face', methods=['POST'])
-def verify_face():
-    if 'document' not in request.files or 'selfie' not in request.files:
-        return jsonify({'status': 'error', 'message': 'Missing document or selfie'}), 400
+@app.route('/face-match', methods=['POST'])
+def face_match():
+    if 'selfie' not in request.files or 'document' not in request.files:
+        return jsonify({'error': 'Both selfie and document images are required'}), 400
 
-    doc_img = face_recognition.load_image_file(request.files['document'])
-    selfie_img = face_recognition.load_image_file(request.files['selfie'])
+    selfie_file = request.files['selfie']
+    document_file = request.files['document']
+
+    selfie_filename = secure_filename(selfie_file.filename)
+    document_filename = secure_filename(document_file.filename)
+
+    selfie_path = os.path.join(UPLOAD_FOLDER, selfie_filename)
+    document_path = os.path.join(UPLOAD_FOLDER, document_filename)
+
+    # Save the uploaded images
+    selfie_file.save(selfie_path)
+    document_file.save(document_path)
+
+    # Optional: Model can be passed in form-data
+    model_name = request.form.get('model', 'Facenet512')  # Default to Facenet512
 
     try:
-        doc_enc = face_recognition.face_encodings(doc_img)[0]
-        selfie_enc = face_recognition.face_encodings(selfie_img)[0]
+        result = DeepFace.verify(img1_path=document_path, img2_path=selfie_path, model_name=model_name)
 
-        match = face_recognition.compare_faces([doc_enc], selfie_enc)[0]
-        distance = face_recognition.face_distance([doc_enc], selfie_enc)[0]
+        
+        distance = result["distance"]
+        threshold = 0.55  # Customize this based on your model; Facenet512 default is ~0.3–0.4
+        match = distance < threshold
+        confidence = round((1 - distance) * 100, 2)
 
-        return jsonify({
-            'status': 'success',
-            'match': match,
-            'confidence': float(1 - distance)
-        })
+        response = {
+            "match": match,
+            "confidence": confidence,
+            "distance": distance,
+            "threshold": threshold
+        }
 
-    except IndexError:
-        return jsonify({'status': 'error', 'message': 'No face detected in one of the images'}), 400
+        return jsonify(response)
+
+    except ValueError as ve:
+        return jsonify({'error': f'Face detection error: {str(ve)}'}), 400
+
+    except Exception as e:
+        return jsonify({'error': f'Internal server error: {str(e)}'}), 500
+
+    finally:
+        # Optional cleanup
+        if os.path.exists(selfie_path):
+            os.remove(selfie_path)
+        if os.path.exists(document_path):
+            os.remove(document_path)
 
 if __name__ == '__main__':
-    app.run(port=5001, debug=True)
+    app.run(debug=True)

@@ -1,8 +1,25 @@
-HELP.md
+# ======================
+# General OS files
+# ======================
+.DS_Store
+Thumbs.db
+
+# ======================
+# Maven / Java build
+# ======================
 target/
 .mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
 !**/src/test/**/target/
+
+# Gradle / IntelliJ build directories
+build/
+!**/src/main/**/build/
+!**/src/test/**/build/
+
+# ======================
+# IDE-specific files
+# ======================
 
 ### STS ###
 .apt_generated
@@ -25,9 +42,30 @@ target/
 /dist/
 /nbdist/
 /.nb-gradle/
-build/
-!**/src/main/**/build/
-!**/src/test/**/build/
 
 ### VS Code ###
 .vscode/
+
+# ======================
+# Python / AI Microservices
+# ======================
+# Liveness-check virtual environment
+ai-microservices/Liveness-check/liveness-venv/
+# Any Python cache
+**/__pycache__/
+**/*.pyc
+**/*.pyo
+**/*.pyd
+
+# Face-match virtual environment (if any)
+ai-microservices/Face-match/venv/
+ai-microservices/OCR-Service/venv/
+
+# Trustnet-face virtual environment (if any)
+trustnet-face/venv/
+trustnet-face/__pycache__/
+
+# ======================
+# Miscellaneous
+# ======================
+HELP.md
