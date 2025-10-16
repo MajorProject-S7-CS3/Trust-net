@@ -1,4 +1,6 @@
-Flask
-pytesseract
-Pillow
-opencv-python
+opencv-python==4.10.0.84
+pytesseract==0.3.13
+spacy==3.7.2
+numpy==1.26.4
+jsonschema==4.22.0
+imutils==0.5.4
